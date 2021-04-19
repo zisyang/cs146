@@ -1,0 +1,186 @@
+package project2;
+
+/******************************************************************************
+ * Java file :  Graph.java
+ * Dependence files  :  Vertex.java (Vertices)
+ *                      Queue.java  (Queue structure for BFS) 
+ *                      Stack.java  (Stack structure for DFS)
+ *                      
+ * Code & Complier  :  Oracle JDeveloper 11g Release 1
+ *  
+ *  Name:   Zi S. Yang
+ *  SJSUID: 007562568
+ *  Course: CS 146-03 Algorithms, Spring 2011, SJSU
+ *  
+ ****************************************************************************/
+
+// Graph class for Graph data structure
+public class Graph
+{
+  private final int MAX_VERTS = 70; //max dimension 8 x 8 = 64 
+  private Vertex vertexList[];      //array of vertices
+  private int adjMat[][];     // adjacency matrix
+  private int nVerts;         // current number of vertices
+  
+  public Graph()            // constructor
+  {
+    vertexList = new Vertex[MAX_VERTS];  //array of vertices
+    adjMat = new int[MAX_VERTS][MAX_VERTS]; // adjacency matrix
+    nVerts = 0;
+    for(int j = 0; j < MAX_VERTS; j++)  // set adjacency
+      for(int k = 0; k < MAX_VERTS; k++) // matrx to 0
+        adjMat[j][k] = 0;
+  }  // end contrustor
+  
+  // add a Vertex into Graph structure
+  public void addVertex(Vertex v)   // argument is Vertex 
+  {
+    vertexList[nVerts++] = v;
+  }
+  
+  // add a edge between two vertices, 
+  // using adjacency matrix to represent the edge
+  //    1 is connected
+  public void addEdge(int start, int end)  
+  {
+    adjMat[start][end] = 1; 
+    adjMat[end][start] = 1;
+  }
+  
+  // remove the edge between two vertices
+  // using adjacency matrix to represent the edge
+  //    0 is not connected
+  public void removeEdge(int start, int end)
+  {
+    adjMat[start][end] = 0;
+    adjMat[end][start] = 0;
+  }
+  
+  // to return if the two vertices is connected or not
+  public int getEdge(int start, int end)
+  {
+    return adjMat[start][end];
+  }
+  
+  //returns an unvisited vertex adjacent to v
+  public int getAdjUnvisitedVertex(int v)
+  {
+    for(int j=v+1; j<nVerts; j++)  //begin from the right or bottom
+      if(adjMat[v][j]==1 && vertexList[j].wasVisited==false)
+        return j;             // return first such vertex
+    for(int j=0; j<v; j++)    //if above fail, begin from left or top
+      if(adjMat[v][j]==1 && vertexList[j].wasVisited==false)
+        return j;          // return first such vertex
+    return -1;      //no such vertices
+  } //end getAdjUnvisitedVertex()
+  
+  // reset all the vertices wasVisited flag and label
+  public void resetflag()
+  {
+    for(int j=0; j<nVerts; j++)    //reset flags and label
+    {
+      vertexList[j].wasVisited = false;
+      vertexList[j].label = ' ';
+    } // end 
+  } // end resetflag( all vertices )
+  
+  //---------------------------------------------------------------------
+  // depth-first search with a stack
+  // @param: String marker (for marking the visited vertex's label)
+  //    return true: found solution
+  //    return false: no solution found
+  public boolean dfs(String marker)   
+  {                     
+    int path = 0;  // to set the order of the vertexs were visited
+    Stack theStack = new Stack(200);     // create a stack for dfs
+    
+    resetflag();  // reset the vertices first
+    
+    vertexList[0].wasVisited = true;  //mark it
+     vertexList[0].label = marker.charAt(path++%10);  // starting at vertex 0
+    theStack.push(0);                 //push it
+    
+    while( !theStack.isEmpty() )  //until stack empty
+    {
+      //get an unvisited vertex adjacent to stack top
+      int u = theStack.peek();  // get the vertex on top of the stack
+      int v = getAdjUnvisitedVertex( u );  //get an unvisited & connected vertex 
+      if( v == -1 )         // if no such vertex,
+      {                  // trick for specify marker string "########## "
+        if(marker.charAt(marker.length()-1)==' ')  // others may skip this step
+          vertexList[u].label = ' ';    // clear the mark if it's not shortest
+        theStack.pop();     //   pop off from the stack
+      }
+      else
+      {
+        vertexList[v].wasVisited = true;    //mark it
+         vertexList[v].label = marker.charAt(path++%10); 
+        theStack.push(v);   //push it into stack
+        if (v == nVerts-1) return true;  // if reach the end vertex, we're done
+      }
+    } //end while
+
+    return false;  // if no solution found return false
+  } //end dfs
+
+  //----------------------------------------------------------------
+  // breadth-first search with a queue
+  // @param:  String marker  ( for marking the vertex's label)
+  //    return a int[][] array for path finder
+  public int[][] bfs(String marker)     
+  {                     
+    int path = 0;   // set the order of vertices were visited
+    final int MAX = 200;  
+    int [][]Origin = new int[MAX][2]; 
+                 //Origin[index][0] hold all visited vertex, 
+                 //Origin[index][1] hold the corresponding vertex in the path
+    int u, v;  // u vertex, v vertex 
+    Queue theQueue = new Queue(200);   // create a queue for bfs
+    
+    resetflag();     // reset the flags of all the vertices
+    
+    vertexList[0].wasVisited = true;       //mark it
+     vertexList[0].label = marker.charAt(path++%10);  // starting at vertex 0
+
+    theQueue.insert(0);            //insert at tail
+    
+    Origin[0][0] = 0;  //all visited vertexs
+    Origin[0][1] = -1; //path for corresponding vertex
+    
+    while( !theQueue.isEmpty() )  //until queue empty,
+    {
+      u = theQueue.remove(); //remove vertex at head
+        
+        //until it has no unvisited neighbors
+      while( ( v = getAdjUnvisitedVertex(u) ) != -1 )  
+      {                // get one,
+        Origin[path][0] = v;   //all visited vertexs
+        Origin[path][1] = u; //path for corresponding vertex
+        
+        vertexList[v].wasVisited = true;    //mark it
+         vertexList[v].label = marker.charAt(path++%10); 
+        theQueue.insert(v);   //insert it
+        if (v == nVerts-1)  // if reach the end vertex, we're done
+        {
+          int [][] Queue = new int[path][2];  // a dummy array for return 
+          for(int i = 0; i < path; i++)
+          {
+            Queue[i][0] = Origin[i][0];  //all visited vertexs
+            Queue[i][1] = Origin[i][1]; //path for corresponding vertex
+          }
+          return Queue;   // reach the end
+        }
+
+      }  //end while (unvisited neighbors)
+
+    } //end while(queue not empty)
+    return Origin; // return nothing if no solution found
+  } //end bfs
+  
+  // to display the vertex label
+  public void displayVertex(int v)
+  {
+    System.out.print(vertexList[v].label);
+  }// end displayVertex
+  
+} // end class Graph

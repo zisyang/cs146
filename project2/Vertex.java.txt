@@ -1,0 +1,37 @@
+package project2;
+
+/******************************************************************************
+ * Java file :  Vertex.java
+ * Dependence files  :  N/A
+ *                      
+ * Code & Complier  :  Oracle JDeveloper 11g Release 1
+ *  
+ *  Name:   Zi S. Yang
+ *  SJSUID: 007562568
+ *  Course: CS 146-03 Algorithms, Spring 2011, SJSU
+ *  
+ ****************************************************************************/
+
+// Vertex class for Vertex data structure
+public class Vertex
+{
+  char label;  //label as path (e.g. '0' or '#')
+  boolean wasVisited;  // a status of the vertex was visited
+  private int ID;   // vertex ID 
+  
+  // constructor
+  // @param: int number (to assign the ID for each vertex
+  public Vertex(int n)
+  {
+    label = ' '; 
+    ID = n;
+    wasVisited = false;
+  }// end constructor
+  
+  // getID to return the ID of the vertex (int)
+  public int getID()
+  {
+    return ID;
+  }// end getID( vertex )
+  
+} // end class Vertex

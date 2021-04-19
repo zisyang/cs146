@@ -1,0 +1,298 @@
+package project2;
+
+/******************************************************************************
+ * Main program file :  Maze.java
+ * Dependence files  :  Graph.java (represent the maze as graph data structure)
+ *                      Vertex.java (represent each cell as a vertex)
+ *                      Queue.java  (Queue structure for BFS) 
+ *                      Stack.java  (Stack structure for DFS)
+ *                      
+ * Code & Complier  :  Oracle JDeveloper 11g Release 1
+ *                      
+ * Project 2 Maze Generator and Solver
+ *  Deadline Tuesday 5/3/2011
+ *  
+ *  Generates a perfect N-by-N maze using depth-first search
+ *  with a stack, and solves the maze by using DFS and BFS algorithms.
+ *    
+ *  Input:
+ *     The program accept integer number of rows and columns r of the maze
+ *     double, or float may not work, the program may terminate by the system.
+ *     (note: Please enable the input option under the complier's preference)
+ *  
+ *  Output:
+ *     The program print the maze, then the DFS and BFS solution. The maze is
+ *     printed in ASCII using '|' and '-' represent walls, '+' for corners,
+ *     and space for rooms and removed walls, '#' for paths.
+ *     
+ *  
+ *  Name:   Zi S. Yang
+ *  SJSUID: 007562568
+ *  Course: CS 146-03 Algorithms, Spring 2011, SJSU
+ *  
+ *****************************************************************************/
+
+import java.util.Scanner;  //use for input
+
+public class Maze extends Graph
+{
+  private int N; //dimension of rectangular maze
+  private Vertex cell[][];  //cells of grid
+
+  private int TotalCells;  // total number of cells 
+
+  public Maze(int n)  // Maze constructor
+  {
+    super();
+    generate(n);   // generate the maze using DFS
+    //sample();
+    
+  } // end of constructor
+  
+  // sample generater for testing 
+  public void sample()  
+  {
+    N = 4;   // number of rows and columns
+    TotalCells = N * N;   // total number of cells
+    cell = new Vertex[N][N];   // represent cell as vertex
+    
+    for(int r=0; r<N; r++)  //r=row number
+      for(int c=0; c<N; c++)  //c=column number
+      {
+        int cellID = r * N + c;  // assign each cell ID 
+        cell[r][c] = new Vertex( cellID );  
+        addVertex(cell[r][c]);   // add the vertex to the graph structure
+      }
+    this.addEdge(0, 1);     // adding the edge between the cells
+    this.addEdge(1, 2);     //    means the wall between them is opened
+    this.addEdge(0, 4);
+    this.addEdge(4, 8);
+    this.addEdge(8, 9);
+    this.addEdge(5, 9);
+    this.addEdge(9, 13);
+    this.addEdge(3, 7);
+    this.addEdge(6, 7);
+    this.addEdge(7, 11);
+    this.addEdge(11, 15);
+    this.addEdge(10, 11);
+    this.addEdge(10, 14);
+    this.addEdge(13, 14);
+    this.addEdge(12, 13);
+  } //end sample
+  
+  // get row number of the cell base on cell id number
+  public int getCellRow(int id) 
+  {
+    return id / N;
+  }
+  
+  // get column number of the cell base on cell id number
+  public int getCellCol(int id)
+  {
+    return id % N;
+  }
+  
+  // generate the maze using dfs algorithm
+  public void generate(int n) 
+  {
+    N = n;  // number of rows and columns
+    TotalCells = N * N;   // total number of cells
+    cell = new Vertex[N][N];  //represent cell as vertex
+    
+    Stack CellStack = new Stack(200); // a stack to hold a list of cell
+    
+    for(int r=0; r<N; r++)  //r=row number
+      for(int c=0; c<N; c++)  //c=column number
+      {
+        int cellID = r * N + c; // assign each cell ID
+        cell[r][c] = new Vertex( cellID );  // create the vertex base on ID
+        this.addVertex(cell[r][c]);   // add the vertex to graph structure
+        CellStack.push( TotalCells-1 - cellID );  // push the last cell first
+      }
+
+     int VisitedCells;   // number of cells visited
+     
+     int row = 0;  
+     int col = 0;
+     int CurrentCell = CellStack.pop();  // hold the current cell location
+     Vertex top,left,bottom,right;   // current cell's neighbors
+     VisitedCells = 1;       
+     
+     while ( VisitedCells < TotalCells )  // depth-first search
+     {
+       row = getCellRow(CurrentCell);
+       col = getCellCol(CurrentCell);
+       cell[row][col].wasVisited = true;
+
+       top = cell[row>0?row-1:0][col];
+       bottom = cell[row<N-1?row+1:N-1][col];
+       left = cell[row][col>0?col-1:0];
+       right = cell[row][col<N-1?col+1:N-1];
+
+       int neighbors[] = new int[4];
+       int found = 0;
+        //find all neighbors of CurrentCell with all walls intact
+       if( !top.wasVisited )
+         neighbors[found++] = top.getID();
+       if( !bottom.wasVisited )
+         neighbors[found++] = bottom.getID();
+       if( !left.wasVisited )
+          neighbors[found++] = left.getID();
+       if( !right.wasVisited )
+          neighbors[found++] = right.getID();
+       if (found > 0) // if one or more neighbor(s) found
+       {
+         double r = Math.random();  
+         int pick = (int) (r * found);  // randomly pick the neighbor
+         this.addEdge(CurrentCell, neighbors[pick]); // knock down the wall 
+         CellStack.push(CurrentCell);  // push CurrentCell location on the stack
+         CurrentCell = neighbors[pick];    // make the new cell CurrentCell
+         VisitedCells++;
+       }
+       else
+       {                    // pop the most recent cell entry off the stack
+         CurrentCell = CellStack.pop();  // make it CurrentCell
+       }
+      } // end while( all cells visited )
+     
+  } // end maze generate
+   
+  // find the path for dfs() 
+  // acturally, just past the specify marker ( '#' x10 plus 1 ' ')
+  // parameter to make the path
+  public void dfsPathFinder() 
+  {
+     this.dfs("########## ");          
+  }
+   
+  // find the path for bfs()
+  // using the return value of bfs() for back-tracker method
+  // and mark the cell walk through
+  public void bfsPathFinder() 
+  {
+       //past a spaced string parameter (' ' x10)
+       //to call the bfs(), 
+       //then return a array for back-tracker
+     int [][]Origin = this.bfs("          ");  // call bfs()
+              //Origin[index][0] hold all visited vertex, 
+              //Origin[index][1] hold the corresponding vertex in the path
+     int end = Origin[Origin.length-1][0];  // ending cell ID
+     int path = end;   // back-track from the ending cell
+     int u = Origin.length-1;   //the index of all visited vertices
+
+     while (path != -1)  // to find the vertices in the path
+     {             // if found the vertex in the path, then mark it '#'
+       cell[this.getCellRow(path)][this.getCellCol(path)].label = '#';
+       
+       for (int v = 0; v <= u; v++)  // find the parent of v 
+         if(Origin[v][0] == path)  //  if found, store parent to v, 
+         {                         //    and follow the path
+           u = v;                  //    ex, 9->8->1->0
+         }
+       path = Origin[u][1];      // continue on path
+     }
+     
+  }
+  
+  // display the maze, represent the maze in ASCII
+  //   in one function, can display the original generated maze and solved maze
+  //   by marking or labeling the cell's label to identify which way to display
+   public void display() 
+   { 
+     char top[] = new char[N*2+1];   // represent top walls
+     char bottom[] = new char[N*2+1];  // bottom walls
+     top[0] = '+';     // top wall of starting cell 0 is opened 
+     top[1] = ' ';     //   for maze entrance
+     top[2] = '+';
+     bottom[2*N-2] = '+';    // bottom wall of ending cell is opened
+     bottom[2*N-1] = ' ';    //    for maze exit
+     bottom[2*N] = '+';
+       for (int c = 1; c < N; c++)    
+       { 
+         top[2*c+1] = '-';     // store top walls of maze
+         top[2*c+2] = '+';
+         bottom[2*c-2] = '+';   // store bottom walls of maze
+         bottom[2*c-1] = '-';         
+         }
+       
+     System.out.println();     // output a new line
+       System.out.println(top);   //output top wall
+       
+      for (int r = 0; r < N; r++)    //r=row number
+      {
+        System.out.print('|'); //left wall
+        for (int c = 0; c < N-1; c++)   //c=column number
+        {   
+          System.out.print(cell[r][c].label); //cell label
+                 // if wall is closed, means there's no an edge in between 
+          if( this.getEdge(cell[r][c].getID(), cell[r][c+1].getID()) == 0)
+            System.out.print('|');        //right wall
+          else
+          {
+            if(cell[r][c+1].label=='#'   // both cell and neighbor is marked
+               && cell[r][c].label=='#') // mean the wall marked walk thru
+              System.out.print('#');     
+            else
+              System.out.print(' ');    // otherwise, remain open
+          }
+        }
+        System.out.print(cell[r][N-1].label);  //cell label
+        System.out.print("|\n");   // end wall
+        if (r < N-1)     // bottom wall for each cell only within the maze
+        {                //   except the end row cells
+          System.out.print('+');   // left corner
+          for (int c = 0; c < N; c++)   //c=column number
+          {        // if the wall is opened, means there's an edge in between
+            if (this.getEdge(cell[r][c].getID(), cell[r+1][c].getID()) == 0 )
+              System.out.print('-');  // cell bottom wall
+              else
+              {
+                if(cell[r+1][c].label=='#'   // both cell and neighbor is marked
+                   && cell[r][c].label=='#') // then the wall marked walk thru
+                  System.out.print('#');     
+                else
+                  System.out.print(' ');   // otherwise, remain open
+              }
+            
+            System.out.print('+');  // end right corner
+            }
+          System.out.print('\n');   // return begining for next row
+        } //end each row display
+        
+      } // end all row display
+     System.out.println(bottom);   // output bottom wall
+     System.out.println();  // output a newline
+   } // end display( maze )
+
+   //////////////main function to test ///////////////////
+   public static void main(String[] args) 
+   {
+      int r;
+      Scanner input = new Scanner(System.in);
+             // prompt the user to enter size of maze
+      System.out.print("Enter number of rows & columns r of the maze:");
+      r = input.nextInt();
+      if(r < 4 || r > 8)
+      {        // if enter is out of range, display error
+        System.out.println("Input only accept 4, 5, 6, 7, 8\n");
+      }
+      else 
+      {
+        Maze maze = new Maze(r);
+        maze.display();
+        System.out.println("DFS:");  // depth-first search to solve maze
+        maze.dfs("0123456789");
+        maze.display();
+        maze.dfsPathFinder();  
+        maze.display();
+      
+        System.out.println("BFS:");  // breath-first search to solve maze
+        maze.bfs("0123456789");
+        maze.display();
+        maze.bfsPathFinder();
+        maze.display();
+      } // end 
+      
+   } // end main
+   
+}  // end of Maze class

@@ -1,0 +1,55 @@
+package project2;
+
+/******************************************************************************
+ * Java file :  Stack.java
+ * Dependence files  :  N/A
+ *                      
+ * Code & Complier  :  Oracle JDeveloper 11g Release 1
+ *  
+ *  Name:   Zi S. Yang
+ *  SJSUID: 007562568
+ *  Course: CS 146-03 Algorithms, Spring 2011, SJSU
+ *  
+ ****************************************************************************/
+
+// Stack class for Stack data structure
+public class Stack
+{
+//  private final int SIZE = 200;  //(temporarily not use this)
+  private int[] st;   // st array to store the member of stack
+  private int top;    // top pointer
+  
+  // constructor
+  // @param: int SIZE ( for the size of a stack)
+  public Stack(int SIZE)  
+  {
+    st = new int[SIZE];   //make array
+    top = -1;          // top pointer
+  } // end constructor
+  
+  // push an item into stack
+  // @param: int item
+  public void push(int item)   
+  {
+    st[++top] = item; //put item on stack
+  }// end push( an item )
+  
+  // pop an item off stack and return its value (int)
+  public int pop()      
+  {
+    return st[top--];  //take item off stack
+  }// end pop( an item )
+  
+  // return the value of item on the top of stack (int)
+  public int peek()  
+  {
+    return st[top];   //peek at top of stack
+  }// end peek( top item)
+  
+  // check the stack if it is empty, return (boolean)
+  public boolean isEmpty()  
+  {
+    return (top==-1);   //true if nothing on the stack
+  }// end isEmpty( the stack )
+  
+} //end class Stack

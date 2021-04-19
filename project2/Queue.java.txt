@@ -1,0 +1,57 @@
+package project2;
+
+/******************************************************************************
+ * Java file :  Queue.java
+ * Dependence files  :  N/A
+ *                      
+ * Code & Complier  :  Oracle JDeveloper 11g Release 1
+ *  
+ *  Name:   Zi S. Yang
+ *  SJSUID: 007562568
+ *  Course: CS 146-03 Algorithms, Spring 2011, SJSU
+ *  
+ ****************************************************************************/
+
+// Queue class for Queue data structure
+public class Queue
+{
+//  private final int SIZE = 200;   // (temporarily not use this )
+  private int[] q;   // q to store the items in a queue
+  private int front; // front pointer
+  private int rear;  // rear pointer
+  
+  // constructor
+  // @param: int SIZE (for the size of a queue)
+  public Queue(int SIZE)   
+  {
+    q = new int[SIZE];  // make array
+    front = 0;      // front pointer
+    rear = -1;      // rear pointer
+  }// end constructor
+  
+  // insert an item into queue at rear
+  // @param: int
+  public void insert(int item)  
+  {
+    if(rear == q.length-1)   // if queue not full
+      rear = -1;            
+    q[++rear] = item;     // put item at rear of queue   
+  } // end insert( an item )
+  
+  // remove an item and return its value (int)
+  // @param: int
+  public int remove()     
+  {
+    int item = q[front++];  
+    if (front == q.length)  // reset front pointer to next top item
+      front = 0;    
+    return item;    //take item from front of queue
+  }// end remove( an item, and return that value)
+  
+  // check the queue if it is empty, return (boolean)
+  public boolean isEmpty()  
+  {                           // true if queue is empty
+    return ( rear+1==front || (front+q.length-1==rear) );
+  } // end isEmpty( the queue )
+  
+}  // end class Queue
